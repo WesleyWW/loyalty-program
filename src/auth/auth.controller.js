@@ -49,9 +49,5 @@ const logout = async (req, res) => {
     })
 }
 
-const authRoute = async (req, res) => {
-    const userId = req.session.userId
-    return res.send(userId)
-}
 
-export { register, login, logout, authRoute } 
+export { register, login, logout } 
