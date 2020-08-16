@@ -4,6 +4,10 @@ import uniqueValidator from 'mongoose-unique-validator'
 const Schema = mongoose.Schema
 
 const CustomerSchema = new Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
     phone: {
         type: String,
         trim: true,
@@ -12,11 +16,10 @@ const CustomerSchema = new Schema({
     email: {
         type: String,
         trim: true,
-        unique: true
     },
     spent: {
         total: { type: Number, trim: true },
-        cylce: { type: Number, trim: true }
+        cycle: { type: Number, trim: true }
     }
 })
 

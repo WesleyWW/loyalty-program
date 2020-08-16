@@ -33,7 +33,10 @@ const UserSchema = new Schema({
     company: {
         type: String,
         trim:true
-    }
+    },
+    customers : [
+        {type: mongoose.Schema.Types.ObjectId,ref:'Customer'}
+    ]
 },{
     timestamps: true
 })
