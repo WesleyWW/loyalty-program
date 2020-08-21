@@ -12,6 +12,8 @@ const register = async (req, res) => {
     const password = bcrypt.hashSync(pw, salt)
     const newUser = await new User({ firstName, lastName, email, company, password })
     console.log(newUser)
+    let session = req.session
+    session.userId = newUser._id
     await newUser.save()
         .then(() => res.json('User Added!'))
         .catch(err => res.status(400).send('Error: ' + err))
