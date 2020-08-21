@@ -2,68 +2,60 @@ import User from '../models/user'
 import Customer from '../models/customer'
 
 /*
-Customer enters phone number - teller enters amount
+Customer enters phone number 
   -->Create customer if doesn't exist - not eligible for reward discount
-  -->Check if eligible for reward, if eligible => discount price
-  -->Send reward eligibility and amount back
+  -->Check if eligible for reward, if eligible return isEligible
+  -->Return customer info
 
-Teller submits both forms
+Teller includes amount w/ customer info
+  -->discount amount if user is eligible for reward
   -->Add amount paid to spent.total
-  -->
-
+  -->add amount paid to spent.cycle -> subtract 100 from spent.cycle
+  -->if cycle > 100 ? isEligible : !isEligible
+  
 */
+
+const enterPhoneNumber = async (req, res) => {
+    const id = req.userId
+    let phone  = `+1${req.body.phone}`
+    try {
+        let customer = await Customer.findOne({ phone })
+        if(!customer){
+            customer = await new Customer({ 
+                phone,
+                userId: id
+            })
+            await customer.save()
+            return res.status(201).send({ success: true, customer })
+        }else{
+            let response = customer.hasReward ? "Customer is eligible for a reward" : "No reward this time"
+            return res.status(200).send({ success: true, message: response })
+        }
+    } catch (err) {
+        console.log(err)
+        return res.status(400).send({ message: 'Problem checking number'})
+    }
+}
 
 const createPurchase = async (req, res) => {
     const id = req.userId
     let phone  = req.body.phone
-    let amount = req.body.amount
-    let cycle 
-    let total = 0
-    let rewardEligible
-    try {
-        
-        let customer = await Customer.findOne({ phone })
-        if(!customer){
-            rewardEligible = (amount > 100) ? '1' : '0'
-
-            customer = await new Customer({ 
-                phone,
-                spent: {
-                    cycle: amount,
-                    total: amount
-                },
-                rewardEligible,
-                user: id
-             })
-            await customer.save()
+    let amount = req.body.amount * 100
+    let usedReward = req.body.usedReward
+    let rewardLevel = 10000
     
-            let user = await User.findById(id)
-            user.customers.push(customer)
+    try {
+        let customer = await Customer.findOne({ phone, userId: id })
+        let cycle = customer.spent.cycle * 100
+        let total = customer.spent.total * 100
+        console.log([cycle, total])
+        customer.spent.total = ((total+amount)/100).toPrecision(2)
+        console.log(customer.spent.total)
+        customer.spent.cycle = usedReward ? (cycle + amount - rewardLevel)/100 : (cycle + amount)/100
+        console.log(customer.spent.cycle)
+        customer.hasReward = customer.spent.cycle > 100 ? '1' : '0'
 
-            
-            await user.save()
-            return res.status(200).send({customer, message: 'Customer created'})
-        }else{
-            //check if elegible for reward
-            if(customer.rewardEligible){
-                amount = (amount*.95).toPrecision(2)
-                cycle = 0
-                total = customer.spent.total + amount
-
-                customer.spent.cycle = cycle
-                customer.spent.total = total
-                customer.rewardEligible = '0'
-                await customer.save()
-                return res.send(customer)
-            }
-            cycle = customer.spent.cycle + amount
-            total = customer.spent.total + amount
-            if((customer.spent.cycle + amount) > 100){
-                customer.rewardEligible = '1'
-            }
-            return res.status(201).send({ success: true, customer })
-        }
-
+        customer.save()
         return res.status(201).send({ success: true, customer })
     } catch (err) {
         console.log(err)
@@ -72,13 +64,17 @@ const createPurchase = async (req, res) => {
 }
 
 const customersByUser = async (req, res) => {
-    const id = req.userId
-
-    const user = await User.findById(id).populate('customers')
-
-
-    return res.send(user)
-
+    const userId = req.userId
+    try {
+        let customers = await Customer.find({ userId })
+        if(!customers){
+            return res.status(404).send({ success: false, message: 'No customers found'})
+        }
+        return res.status(200).send(customers)
+    } catch (err) {
+        console.log(err)
+        return res.status(400).send({ success: false, message: 'Problem getting customers'})
+    }
 }
 
-export { createPurchase, customersByUser }
+export { enterPhoneNumber, createPurchase, customersByUser }

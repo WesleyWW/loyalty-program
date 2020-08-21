@@ -1,8 +1,11 @@
 import { Router } from 'express'
 import { verifyLogin } from '../../auth/auth.middleware'
-import { createPurchase, customersByUser } from '../controllers/customer.controller'
+
+import { enterPhoneNumber, createPurchase, customersByUser  } from '../controllers/customer.controller'
 const router = Router()
 
+//Enter a phone number
+router.post('/number', verifyLogin, enterPhoneNumber )
 //Add new customer
 router.post('/create', verifyLogin, createPurchase)
 

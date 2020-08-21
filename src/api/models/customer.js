@@ -4,24 +4,19 @@ import uniqueValidator from 'mongoose-unique-validator'
 const Schema = mongoose.Schema
 
 const CustomerSchema = new Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+    userId: {
+        type: String
     },
     phone: {
         type: String,
         trim: true,
         unique: true
     },
-    email: {
-        type: String,
-        trim: true,
-    },
     spent: {
-        total: { type: Number, trim: true },
-        cycle: { type: Number, trim: true }
+        total: { type: Number, trim: true, default: 0 },
+        cycle: { type: Number, trim: true, default: 0 }
     },
-    rewardEligible:{
+    hasReward:{
         type: Boolean,
         default: '0'
     }
