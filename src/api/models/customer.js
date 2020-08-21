@@ -20,6 +20,10 @@ const CustomerSchema = new Schema({
     spent: {
         total: { type: Number, trim: true },
         cycle: { type: Number, trim: true }
+    },
+    rewardEligible:{
+        type: Boolean,
+        default: '0'
     }
 })
 
