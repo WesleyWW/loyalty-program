@@ -1,7 +1,7 @@
 require('dotenv').config(); // this is important!
 module.exports = {
   "development": {
-    PORT: process.env.PORT || 3000,
+    PORT: process.env.PORT || 5000,
     ATLAS_URI: process.env.ATLAS_URI,
     jwtSecret: 'jwt_please_change',
     jwtExpiration: '12h'
